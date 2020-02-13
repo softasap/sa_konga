@@ -1,0 +1,6 @@
+---
+# tasks file for sa_konga
+
+  - include_tasks: tasks_konga_postgres.yml
+
+  - include_tasks: tasks_konga.yml

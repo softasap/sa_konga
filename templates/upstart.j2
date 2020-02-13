@@ -1,0 +1,23 @@
+description "konga kong ui"
+
+start on started networking
+stop on runlevel [!2345]
+
+env URI={{ konga_connection_uri }}
+env ADAPTER=postgres
+env KONGALOGS={{ konga_log_dir | default("") }}
+env KONGAUSER={{ konga_user }}
+env DB_ADAPTER=postgres
+env DB_URI={{ konga_connection_uri }}
+
+env PATH={{npm_path_detected}}:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin:$PATH
+env NODE_BIN={{npm_path_detected}}/node
+
+respawn
+
+script
+  cd {{ konga_dir }}/current
+  exec su -s /bin/sh -c 'exec "$0" "$@"' $KONGAUSER -- $NODE_BIN --harmony {{ konga_dir }}/current/app.js
+#                        >> $KONGALOGS/access.log \
+#                        2>> $KONGALOGS/error.log
+end script

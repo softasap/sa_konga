@@ -1,0 +1,140 @@
+---
+  - name: Konga | Dependencies
+    package:
+      name: unzip
+      state: present
+    become: yes
+    tags:
+      - konga
+
+  - name: Konga | create group
+    group:
+       name: "{{ konga_group }}"
+       state: present
+    become: yes
+    tags:
+      - konga
+
+  - name: Konga create user
+    user:
+      name: "{{ konga_user }}"
+      group: "{{ konga_group }}"
+      createhome: yes
+      comment: "Konga User"
+      state: present
+    become: yes
+    tags:
+      - konga
+
+  - include_tasks: tasks_nvm.yml
+    when: option_nodejs_install_with_nvm
+
+  - name: Konga | Detect node location
+    include_tasks: __detect_node_path.yml
+    when: npm_path_detected is not defined
+
+  - name: Konga | Ensure service folder
+    file:
+      path: "{{ konga_base_dir }}"
+      state: "directory"
+      owner: "{{ konga_user }}"
+      group: "{{ konga_group }}"
+    become: yes
+    tags:
+      - konga
+
+  - name: Konga | Download distribution
+    get_url:
+      url: "{{ konga_dist_url }}"
+      dest: "{{ konga_dist_location }}"
+    become: yes
+    become_user: "{{ konga_user }}"
+    tags:
+      - konga
+
+  - name: Konga | Ensure pristine version
+    file:
+      path: "{{ konga_base_dir }}/konga-{{ konga_version }}"
+      state: absent
+    become: yes
+    tags:
+      - konga
+
+  - name: Konga | unpack distribution
+    unarchive:
+      src: "{{ konga_dist_location }}"
+      dest: "{{ konga_base_dir }}"
+      remote_src: yes
+    become: yes
+    become_user: "{{ konga_user }}"
+    tags:
+      - konga
+
+  - name: Konga | link distrution
+    file:
+      src: "{{ konga_base_dir }}/konga-{{ konga_version }}"
+      dest: "{{ konga_base_dir }}/current"
+      owner: "{{ konga_user }}"
+      group: "{{ konga_group }}"
+      state: link
+    become: yes
+    tags:
+      - konga
+
+  - name: Konga | Detect node location
+    include_tasks: __detect_node_path.yml
+    when: npm_path_detected is not defined
+
+  - name: Konga | Install node dependencies
+    shell: "npm install -y"
+    args:
+      chdir: "{{ konga_dir }}/current"
+    become: "yes"
+    become_user: "{{ konga_user }}"
+    environment:
+      PATH: "{{ npm_path_detected }}:{{ ansible_env.PATH }}"       # can be different depending on nvm version
+    tags:
+      - konga
+      - skip_ansible_lint
+
+  - name: Konga | Proceed initial bootstrapping
+    shell: "{{npm_path_detected}}/node {{ konga_dir }}/current/bin/konga.js prepare --adapter postgres --uri {{ konga_connection_uri }}"
+    args:
+      chdir: "{{ konga_dir }}/current"
+    become: "yes"
+    become_user: "{{ konga_user }}"
+    environment:
+      PATH: "{{ npm_path_detected }}:{{ ansible_env.PATH }}"
+    when: docker_test is not defined
+    tags:
+      - konga
+      - skip_ansible_lint
+
+  - name: Konga | Configure upstart
+    template:
+       src: "{{ role_path }}/templates/upstart.j2"
+       dest: "/etc/init/konga.conf"
+    when: ansible_service_mgr == "upstart"
+    become: yes
+    tags:
+      - konga
+
+  - name: Konga | Configure systemd
+    template:
+       src: "{{ role_path }}/templates/systemd.service.j2"
+       dest: "/etc/systemd/system/konga.service"
+    when: ansible_service_mgr == "systemd"
+    become: yes
+    tags:
+      - konga
+
+  - name: Konga  | Configuring startup
+    service:
+       name: "konga"
+       state: started
+       enabled: yes
+    when: docker_test is not defined
+    become: yes
+    tags:
+      - konga
+

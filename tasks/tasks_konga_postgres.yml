@@ -1,0 +1,50 @@
+---
+  - name:  Database | Get acl dependency (ansible unprivileged user operations magic)
+    apt: pkg="acl"
+    when: ansible_os_family == "Debian"
+    register: acl_result
+    until: acl_result is success
+    retries: 10
+    become: yes
+    tags:
+      - db
+
+  - name: For troubleshouting, output ansible_python_version
+    debug: var="ansible_python_version"
+
+  - name: Install psycopg2(2)
+    package:
+       name:
+         - python-psycopg2
+       state: present
+    when: ansible_python_version is version_compare('3','<')
+    become: yes
+    tags:
+      - db
+
+  - name: Install psycopg2(3)
+    package:
+       name:
+         - python3-psycopg2
+       state: present
+    when: ansible_python_version is version_compare('3','>=')
+    become: yes
+    tags:
+      - db
+
+  - name: Database | Create user
+    postgresql_user: name="{{ konga_pg_user }}" password="{{ konga_pg_password }}" role_attr_flags="{{ konga_pg_user_role }}"
+    become_user: postgres
+    become: yes
+    tags:
+      - db
+
+  - name: Database | Create db
+    postgresql_db:
+      name: "{{ konga_pg_database }}"
+      owner: "{{ konga_pg_user }}"
+    become_user: postgres
+    become: yes
+    tags:
+      - db
+

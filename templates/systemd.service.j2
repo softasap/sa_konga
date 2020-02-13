@@ -1,0 +1,21 @@
+[Unit]
+Description=Konga, the kong ui
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User={{ konga_user }}
+Group={{ konga_group }}
+Environment=PATH={{npm_path_detected}}:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin:$PATH
+Environment=NODE_BIN={{npm_path_detected}}/node
+Environment=DB_ADAPTER=postgres
+Environment=DB_URI={{ konga_connection_uri }}
+
+
+
+WorkingDirectory={{ konga_dir }}/current
+ExecStart={{npm_path_detected}}/node --harmony {{ konga_dir }}/current/app.js
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

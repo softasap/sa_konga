@@ -1,0 +1,27 @@
+---
+# defaults file for sa_konga
+
+option_nodejs_install_with_nvm: true
+nvm_version: 0.31.1
+nodejs_version: 8.11.3
+
+konga_user: konga
+konga_group: konga
+
+konga_pg_host: "127.0.0.1"
+konga_pg_port: 5432
+konga_pg_user: konga
+konga_pg_password: konga
+konga_pg_database: konga
+konga_pg_user_role: "CREATEDB" #NO
+
+konga_connection_uri: "postgresql://{{ konga_pg_user }}:{{ konga_pg_password }}@{{ konga_pg_host }}:{{ konga_pg_port }}/{{ konga_pg_database }}"
+
+deploy_user: "{{ konga_user }}"
+
+konga_base_dir: /home/{{ konga_user }}/konga
+konga_dir: "{{ konga_base_dir }}"
+konga_version: "0.14.7"
+
+konga_dist_url: "https://github.com/pantsel/konga/archive/{{ konga_version }}.zip"
+konga_dist_location: "{{ konga_base_dir }}/{{ konga_version }}.zip"
