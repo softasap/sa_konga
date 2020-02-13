@@ -2,5 +2,6 @@
 # tasks file for sa_konga
 
   - include_tasks: tasks_konga_postgres.yml
+    when: docker_test is not defined
 
   - include_tasks: tasks_konga.yml
