@@ -93,6 +93,7 @@
     become_user: "{{ konga_user }}"
     environment:
       PATH: "{{ npm_path_detected }}:{{ ansible_env.PATH }}"       # can be different depending on nvm version
+    when: docker_test is not defined
     tags:
       - konga
       - skip_ansible_lint
