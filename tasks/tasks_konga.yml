@@ -98,7 +98,7 @@
       - skip_ansible_lint
 
   - name: Konga | Proceed initial bootstrapping
-    shell: "{{npm_path_detected}}/node {{ konga_dir }}/current/bin/konga.js prepare --adapter postgres --uri {{ konga_connection_uri }}"
+    shell: "{{ npm_path_detected }}/node {{ konga_dir }}/current/bin/konga.js prepare --adapter postgres --uri {{ konga_connection_uri }}"
     args:
       chdir: "{{ konga_dir }}/current"
     become: "yes"

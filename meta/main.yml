@@ -40,7 +40,7 @@ galaxy_info:
   galaxy_tags:
     - kong
     - konga
-    - management_ui
+    - managementui
   #platforms:
   #- name: EL
   #  versions:
