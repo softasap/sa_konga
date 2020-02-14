@@ -47,4 +47,3 @@
     become: yes
     tags:
       - db
-

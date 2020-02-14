@@ -138,4 +138,3 @@
     become: yes
     tags:
       - konga
-
